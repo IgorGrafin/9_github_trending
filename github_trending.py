@@ -13,16 +13,15 @@ def get_trending_repositories(top_size, days):
     response = requests.get(api_url, params)
     if response.ok:
         return response.json()["items"]
-    return None
 
 
 def get_open_issues_amount(repo_full_name):
-    api_url = "https://api.github.com/repos/" + repo_full_name + "/issues"
+    api_url = "https://api.github.com/repos/{}/issues".format(repo_full_name)
     response = requests.get(api_url)
     return len(response.json())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     days_period = 7
     top_size = 20
     repos = get_trending_repositories(top_size, days_period)
