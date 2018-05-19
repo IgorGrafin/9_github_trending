@@ -2,33 +2,40 @@ import requests
 from datetime import datetime, timedelta
 
 
-TOP_SIZE = 20
-API_URL = "https://api.github.com/search/repositories"
-DAYS_PERIOD = 7
-
-
-def get_trending_repositories(top_size):
-    since_date = datetime.today().date() - timedelta(DAYS_PERIOD)
+def get_trending_repositories(top_size, days):
+    api_url = "https://api.github.com/search/repositories"
+    since_date = datetime.today().date() - timedelta(days)
     params = {
         "q": "created:>={}".format(since_date),
         "sort": "stars",
         "per_page": top_size
     }
-    response = requests.get(API_URL, params)
+    response = requests.get(api_url, params)
     if response.ok:
         return response.json()["items"]
     return None
 
 
+def get_open_issues_amount(repo_full_name):
+    api_url = "https://api.github.com/repos/" + repo_full_name + "/issues"
+    response = requests.get(api_url)
+    return len(response.json())
+
+
 if __name__ == '__main__':
-    repos = get_trending_repositories(TOP_SIZE)
+    days_period = 7
+    top_size = 20
+    repos = get_trending_repositories(top_size, days_period)
     if not repos:
         exit("Can't fetch api.github.com")
 
+    print("Top {} repositories created for last {} days:".format(
+        top_size, days_period))
+
     for repo in repos:
-        print("{} has {} stars and {} issues. URL: {}".format(
-            repo["full_name"],
-            repo["stargazers_count"],
-            repo["open_issues"],
-            repo["html_url"]
-        ))
+        print("Project {} has {} stars and {} issues. URL: {}".format(
+           repo["name"],
+           repo["stargazers_count"],
+           get_open_issues_amount(repo["full_name"]),
+           repo["html_url"]
+       ))
